@@ -17,6 +17,34 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
 });
 
+// async function
+async function run() {
+  try {
+    await client.connect();
+    console.log("Database Connection is OK");
+    const database = client.db("motoGP_DB");
+    const productsCollection = database.collection("products");
+
+    // GET API (get all products)
+    app.get("/products", async (req, res) => {
+      console.log("Get Request is Send");
+      const cursor = productsCollection.find({});
+      const size = parseInt(req.query?.size);
+      let products;
+      if (size === 6) {
+        products = await cursor.limit(size).toArray();
+      } else {
+        products = await cursor.toArray();
+      }
+      res.send(products);
+    });
+  } finally {
+    //   await client.close();
+  }
+}
+
+run().catch(console.dir);
+
 app.get("/", (req, res) => {
   res.send("Hello MotoGP!");
 });
